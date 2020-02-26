@@ -1,0 +1,43 @@
+#!/bin/sh
+set -euf -o pipefail
+
+##
+# Split a file by lines evenly to <num> new output files.
+#
+# This uses the split command, and a suffix length of 1,
+# which means this can output up to 26 files.
+#
+# Syntax:
+#
+#    split-lines-evenly <filename> <number-of-output-files>
+#
+# Example:
+#
+#    split-lines-evenly hello.txt 3
+#    #=>
+#    hello.txt.a
+#    hello.txt.b
+#    hello.txt.c
+#
+# The intended use of this script is a simple split into a
+# group of files, such as for parallel processing on one system,
+# or independent review by a small team of reviewers, etc. 
+#
+# This script is not intended to handle much larger splits,
+# or high speed splits, or different kinds of output names, etc.
+#
+# TODO: consider porting to awk, which has more flexibility,
+# such as doing output file names with increasing integers.
+#
+# Contact: Joel Parker Henderson (joel@joelparkerhenderson.com)
+# License: GPL
+# Updated: 2015-01-25
+##
+
+input_file="$1"  # e.g. "hello.txt"
+output_pieces="$2"  # e.g. "3" to split the file into three output files
+shift 2  # the rest are passed as-is to the split command
+
+input_file_line_count=$(wc -l "$input_file" | awk '{print $1}')
+lines_per_file=$(( $(( input_file_line_count + output_pieces - 1 )) / output_pieces ))
+split -a 1 -l $lines_per_file $@ $input_file $input_file.
